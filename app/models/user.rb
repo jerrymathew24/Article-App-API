@@ -6,4 +6,5 @@ class User < ApplicationRecord
 
   enum role: { admin: 'admin', editor: 'editor', user: 'user' }
   validates :role, presence: true
+  has_many :articles
 end

@@ -1,3 +1,4 @@
+# config/routes.rb
 Rails.application.routes.draw do
   devise_for :users, skip: [:sessions, :registrations]
   
@@ -7,6 +8,8 @@ Rails.application.routes.draw do
         post 'auth/sign_up', to: 'registrations#create'
         post 'auth/sign_in', to: 'sessions#create'
       end
+
+      resources :articles, only: [:index, :create, :show, :update, :destroy]
     end
   end
 end
