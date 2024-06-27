@@ -36,6 +36,8 @@ class Api::V1::ArticlesController < ApplicationController
     else
       render json: { error: 'Failed to delete article' }, status: :unprocessable_entity
     end
+    rescue CanCan::AccessDenied => e
+    render json: { error: 'You are not authorized to perform this action' }, status: :forbidden
   end
 
   private
@@ -46,12 +48,16 @@ class Api::V1::ArticlesController < ApplicationController
 
   def authorize_request
     header = request.headers['Authorization']
-    header = header.split(' ').last if header
-    begin
-      decoded = JsonWebToken.decode(header)
-      @current_user = User.find(decoded[:user_id]) if decoded
-    rescue ActiveRecord::RecordNotFound, JWT::DecodeError
-      render json: { error: 'Unauthorized' }, status: :unauthorized
+    if header.present?
+      token = header.split(' ').last
+      begin
+        decoded = JsonWebToken.decode(token)
+        @current_user = User.find(decoded[:user_id])
+      rescue JWT::DecodeError => e
+        render json: { error: 'Unauthorized: Invalid token' }, status: :unauthorized
+      end
+    else
+      render json: { error: 'Unauthorized: Missing token' }, status: :unauthorized
     end
   end
 end
